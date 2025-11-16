@@ -35,6 +35,13 @@
             margin-bottom: 30px;
         }
 
+        .logo img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+
         .logo h1 {
             color: #667eea;
             font-size: 28px;
@@ -102,7 +109,8 @@
 <body>
     <div class="login-box">
         <div class="logo">
-            <h1>☕ BLUEST Coffee</h1>
+            <img src="https://uploads.onecompiler.io/432w6j563/444sfg9pv/Picture1.jpg" alt="BLUEST Coffee Logo">
+            <h1>BLUEST Coffee</h1>
             <p>Sistem Manajemen Inventory</p>
         </div>
 

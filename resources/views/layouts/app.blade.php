@@ -28,15 +28,30 @@
         }
 
         .navbar-brand {
-            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
             font-weight: bold;
             color: #667eea;
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
         }
 
         .navbar-user {
             display: flex;
             align-items: center;
             gap: 15px;
+        }
+
+        .navbar-user span {
+            color: #333;
+            font-weight: 500;
         }
 
         .btn-logout {
@@ -48,6 +63,11 @@
             cursor: pointer;
             font-size: 14px;
             text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #c82333;
         }
 
         .main-content {
@@ -57,7 +77,7 @@
         .sidebar {
             width: 250px;
             background: white;
-            min-height: calc(100vh - 60px);
+            min-height: calc(100vh - 70px);
             padding: 20px 0;
         }
 
@@ -252,13 +272,25 @@
             .sidebar {
                 display: none;
             }
+
+            .navbar-brand {
+                font-size: 16px;
+            }
+
+            .navbar-brand img {
+                width: 35px;
+                height: 35px;
+            }
         }
     </style>
     @stack('styles')
 </head>
 <body>
     <nav class="navbar">
-        <div class="navbar-brand">☕ BLUEST Coffee</div>
+        <a href="{{ route('dashboard') }}" class="navbar-brand">
+            <img src="https://uploads.onecompiler.io/432w6j563/444sfg9pv/Picture1.jpg" alt="BLUEST Coffee Logo">
+            <span>BLUEST Coffee</span>
+        </a>
         <div class="navbar-user">
             <span>{{ Auth::user()->name }}</span>
             <form action="{{ route('logout') }}" method="POST" style="display: inline;">
