@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - BLUEST Coffee</title>
+    <title>Register - BLUEST Coffee</title>
     <style>
         * {
             margin: 0;
@@ -21,7 +21,7 @@
             padding: 20px;
         }
 
-        .login-box {
+        .register-box {
             background: white;
             padding: 40px;
             border-radius: 10px;
@@ -64,7 +64,8 @@
             font-weight: 500;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -72,7 +73,8 @@
             font-size: 14px;
         }
 
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -105,60 +107,121 @@
             color: #721c24;
         }
 
-        .register-link {
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .login-link {
             text-align: center;
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #e0e0e0;
         }
 
-        .register-link p {
+        .login-link p {
             color: #666;
             font-size: 14px;
             margin-bottom: 10px;
         }
 
-        .register-link a {
+        .login-link a {
             color: #667eea;
             text-decoration: none;
             font-weight: 600;
         }
 
-        .register-link a:hover {
+        .login-link a:hover {
             text-decoration: underline;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="login-box">
+    <div class="register-box">
         <div class="logo">
             <img src="https://uploads.onecompiler.io/432w6j563/444sfg9pv/Picture1.jpg" alt="BLUEST Coffee Logo">
             <h1>BLUEST Coffee</h1>
-            <p>Sistem Manajemen Inventory</p>
+            <p>Daftar Akun Baru</p>
         </div>
 
         @if($errors->any())
             <div class="alert alert-danger">
-                {{ $errors->first() }}
+                <strong>Oops!</strong> Ada kesalahan:
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
-        <form action="{{ route('login.post') }}" method="POST">
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <form action="{{ route('register.post') }}" method="POST">
             @csrf
+            
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" name="name" placeholder="Masukkan nama lengkap" value="{{ old('name') }}" required>
+                @error('name')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
+            </div>
+
             <div class="form-group">
                 <label>Username</label>
-                <input type="text" name="username" placeholder="Masukkan username" required>
+                <input type="text" name="username" placeholder="Masukkan username" value="{{ old('username') }}" required>
+                @error('username')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
             </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="Masukkan email" value="{{ old('email') }}" required>
+                @error('email')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
+            </div>
+
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" name="password" placeholder="Masukkan password" required>
+                <input type="password" name="password" placeholder="Masukkan password (min. 6 karakter)" required>
+                @error('password')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
             </div>
-            <button type="submit" class="btn">Login</button>
+
+            <div class="form-group">
+                <label>Konfirmasi Password</label>
+                <input type="password" name="password_confirmation" placeholder="Ulangi password" required>
+            </div>
+
+            <div class="form-group">
+                <label>Role</label>
+                <select name="role" required>
+                    <option value="staff" {{ old('role') == 'staff' ? 'selected' : '' }}>Staff</option>
+                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn">Daftar</button>
         </form>
 
-        <div class="register-link">
-            <p>Belum punya akun?</p>
-            <a href="{{ route('register') }}">Silahkan Daftar</a>
+        <div class="login-link">
+            <p>Sudah punya akun?</p>
+            <a href="{{ route('login') }}">Login di sini</a>
         </div>
     </div>
 </body>

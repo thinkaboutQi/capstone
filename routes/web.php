@@ -23,8 +23,13 @@ Route::middleware('guest')->group(function () {
         return redirect()->route('login');
     });
     
+    // Login Routes
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    
+    // Register Routes
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 });
 
 // Route untuk User yang sudah login
