@@ -25,6 +25,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
         }
 
         .navbar-brand {
@@ -46,12 +47,185 @@
         .navbar-user {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
         .navbar-user span {
             color: #333;
             font-weight: 500;
+        }
+
+        /* Notification Bell */
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .bell-icon {
+            font-size: 24px;
+            color: #667eea;
+            transition: transform 0.3s;
+        }
+
+        .bell-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #f44336;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Notification Dropdown */
+        .notification-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 100px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notification-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .notification-count {
+            background: #f44336;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .notification-list {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .notification-item:hover {
+            background: #f9f9f9;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .notification-icon {
+            font-size: 20px;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .notification-message {
+            color: #666;
+            font-size: 13px;
+            margin-left: 30px;
+        }
+
+        .notification-stock {
+            margin-left: 30px;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .stock-warning {
+            color: #f44336;
+            font-weight: 600;
+        }
+
+        .notification-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        .notification-empty-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        .notification-footer {
+            padding: 12px 20px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .notification-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .notification-footer a:hover {
+            text-decoration: underline;
         }
 
         .btn-logout {
@@ -281,6 +455,11 @@
                 width: 35px;
                 height: 35px;
             }
+
+            .notification-dropdown {
+                right: 20px;
+                width: calc(100vw - 40px);
+            }
         }
     </style>
     @stack('styles')
@@ -292,11 +471,70 @@
             <span>BLUEST Coffee</span>
         </a>
         <div class="navbar-user">
+            <!-- Notification Bell -->
+            <div class="notification-bell" onclick="toggleNotification()">
+                <span class="bell-icon">🔔</span>
+                @php
+                    $stokMinimal = \App\Models\Barang::whereRaw('stok <= min_stok')->count();
+                @endphp
+                @if($stokMinimal > 0)
+                    <span class="notification-badge">{{ $stokMinimal }}</span>
+                @endif
+            </div>
+
             <span>{{ Auth::user()->name }}</span>
             <form action="{{ route('logout') }}" method="POST" style="display: inline;">
                 @csrf
                 <button type="submit" class="btn-logout">Logout</button>
             </form>
+        </div>
+
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-header">
+                <h3>📦 Notifikasi Stok</h3>
+                @if($stokMinimal > 0)
+                    <span class="notification-count">{{ $stokMinimal }}</span>
+                @endif
+            </div>
+
+            <div class="notification-list">
+                @php
+                    $barangMinimal = \App\Models\Barang::whereRaw('stok <= min_stok')
+                        ->orderBy('stok', 'asc')
+                        ->get();
+                @endphp
+
+                @if($barangMinimal->count() > 0)
+                    @foreach($barangMinimal as $item)
+                        <div class="notification-item">
+                            <div class="notification-item-header">
+                                <span class="notification-icon">⚠️</span>
+                                <span class="notification-title">{{ $item->nama }}</span>
+                            </div>
+                            <div class="notification-message">
+                                Stok menipis! Segera lakukan pemesanan ulang.
+                            </div>
+                            <div class="notification-stock">
+                                Stok tersisa: <span class="stock-warning">{{ $item->stok }} {{ $item->satuan }}</span> 
+                                (Min: {{ $item->min_stok }} {{ $item->satuan }})
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="notification-empty">
+                        <div class="notification-empty-icon">✅</div>
+                        <p>Semua stok aman!</p>
+                        <p style="font-size: 12px; margin-top: 5px;">Tidak ada barang yang menipis</p>
+                    </div>
+                @endif
+            </div>
+
+            @if($barangMinimal->count() > 0)
+                <div class="notification-footer">
+                    <a href="{{ route('barang.index') }}">Lihat Semua Barang →</a>
+                </div>
+            @endif
         </div>
     </nav>
 
@@ -305,18 +543,30 @@
             <a href="{{ route('dashboard') }}" class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <span>📊</span> Dashboard
             </a>
-            <a href="{{ route('barang.index') }}" class="menu-item {{ request()->routeIs('barang.*') ? 'active' : '' }}">
-                <span>📦</span> Data Barang
-            </a>
+            
+            <!-- Menu Data Barang - ADMIN ONLY -->
+            @if(Auth::user()->role === 'admin')
+                <a href="{{ route('barang.index') }}" class="menu-item {{ request()->routeIs('barang.*') ? 'active' : '' }}">
+                    <span>📦</span> Data Barang
+                </a>
+            @endif
+            
+            <!-- Menu Stok Masuk - ADMIN & STAFF -->
             <a href="{{ route('stok-masuk.index') }}" class="menu-item {{ request()->routeIs('stok-masuk.*') ? 'active' : '' }}">
                 <span>📥</span> Stok Masuk
             </a>
+            
+            <!-- Menu Stok Keluar - ADMIN & STAFF -->
             <a href="{{ route('stok-keluar.index') }}" class="menu-item {{ request()->routeIs('stok-keluar.*') ? 'active' : '' }}">
                 <span>📤</span> Stok Keluar
             </a>
-            <a href="{{ route('laporan.index') }}" class="menu-item {{ request()->routeIs('laporan.*') ? 'active' : '' }}">
-                <span>📋</span> Laporan
-            </a>
+            
+            <!-- Menu Laporan - ADMIN ONLY -->
+            @if(Auth::user()->role === 'admin')
+                <a href="{{ route('laporan.index') }}" class="menu-item {{ request()->routeIs('laporan.*') ? 'active' : '' }}">
+                    <span>📋</span> Laporan
+                </a>
+            @endif
         </div>
 
         <div class="content">
@@ -335,6 +585,28 @@
             @yield('content')
         </div>
     </div>
+
+    <script>
+        function toggleNotification() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notificationDropdown');
+            const bell = document.querySelector('.notification-bell');
+            
+            if (!bell.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Auto refresh notification every 5 minutes
+        setInterval(function() {
+            location.reload();
+        }, 300000); // 5 minutes
+    </script>
 
     @stack('scripts')
 </body>

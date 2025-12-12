@@ -13,7 +13,7 @@ use App\Http\Controllers\LaporanController;
 | Web Routes - BLUEST Coffee Inventory System
 |--------------------------------------------------------------------------
 |
-| Route untuk sistem manajemen inventory BLUEST Coffee
+| Route untuk sistem manajemen inventory BLUEST Coffee dengan RBAC
 |
 */
 
@@ -32,26 +32,56 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 });
 
-// Route untuk User yang sudah login
+// Route untuk User yang sudah login (Admin & Staff)
 Route::middleware('auth')->group(function () {
     
-    // Logout
+    // Logout (semua role bisa logout)
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     
-    // Dashboard
+    // Dashboard (semua role bisa akses)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Data Barang - Resource Controller (CRUD lengkap)
-    Route::resource('barang', BarangController::class);
+    // =======================================================================
+    // ROUTE KHUSUS ADMIN (hanya admin yang bisa akses)
+    // =======================================================================
+    Route::middleware('role:admin')->group(function () {
+        
+        // Data Barang - CRUD lengkap (ADMIN ONLY)
+        Route::resource('barang', BarangController::class);
+        
+        // Laporan - ADMIN ONLY
+        Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('/laporan/export', [LaporanController::class, 'exportPDF'])->name('laporan.export');
+    });
     
-    // Stok Masuk - Resource Controller
-    Route::resource('stok-masuk', StokMasukController::class);
+    // =======================================================================
+    // ROUTE UNTUK ADMIN & STAFF (keduanya bisa akses)
+    // =======================================================================
+    Route::middleware('role:admin,staff')->group(function () {
+        
+        // Stok Masuk - Admin & Staff bisa input
+        Route::get('/stok-masuk', [StokMasukController::class, 'index'])->name('stok-masuk.index');
+        Route::get('/stok-masuk/create', [StokMasukController::class, 'create'])->name('stok-masuk.create');
+        Route::post('/stok-masuk', [StokMasukController::class, 'store'])->name('stok-masuk.store');
+        
+        // Stok Keluar - Admin & Staff bisa input
+        Route::get('/stok-keluar', [StokKeluarController::class, 'index'])->name('stok-keluar.index');
+        Route::get('/stok-keluar/create', [StokKeluarController::class, 'create'])->name('stok-keluar.create');
+        Route::post('/stok-keluar', [StokKeluarController::class, 'store'])->name('stok-keluar.store');
+    });
     
-    // Stok Keluar - Resource Controller
-    Route::resource('stok-keluar', StokKeluarController::class);
-    
-    // Laporan
-    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
-    Route::get('/laporan/export', [LaporanController::class, 'exportPDF'])->name('laporan.export');
-    
+    // =======================================================================
+    // ROUTE EDIT/DELETE - ADMIN ONLY
+    // =======================================================================
+    Route::middleware('role:admin')->group(function () {
+        // Stok Masuk - Edit & Delete (ADMIN ONLY)
+        Route::get('/stok-masuk/{id}/edit', [StokMasukController::class, 'edit'])->name('stok-masuk.edit');
+        Route::put('/stok-masuk/{id}', [StokMasukController::class, 'update'])->name('stok-masuk.update');
+        Route::delete('/stok-masuk/{id}', [StokMasukController::class, 'destroy'])->name('stok-masuk.destroy');
+        
+        // Stok Keluar - Edit & Delete (ADMIN ONLY)
+        Route::get('/stok-keluar/{id}/edit', [StokKeluarController::class, 'edit'])->name('stok-keluar.edit');
+        Route::put('/stok-keluar/{id}', [StokKeluarController::class, 'update'])->name('stok-keluar.update');
+        Route::delete('/stok-keluar/{id}', [StokKeluarController::class, 'destroy'])->name('stok-keluar.destroy');
+    });
 });

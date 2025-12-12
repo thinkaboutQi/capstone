@@ -16,9 +16,34 @@ class LaporanController extends Controller
      */
     public function index(Request $request)
     {
-        // Set default periode (bulan ini)
-        $tanggalMulai = $request->input('tanggal_mulai', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $tanggalAkhir = $request->input('tanggal_akhir', Carbon::now()->format('Y-m-d'));
+        $periode = $request->input('periode', 'bulan_ini');
+        
+        // Set tanggal berdasarkan periode
+        switch ($periode) {
+            case 'hari_ini':
+                $tanggalMulai = Carbon::today()->format('Y-m-d');
+                $tanggalAkhir = Carbon::today()->format('Y-m-d');
+                break;
+            
+            case 'minggu_ini':
+                $tanggalMulai = Carbon::now()->startOfWeek()->format('Y-m-d');
+                $tanggalAkhir = Carbon::now()->endOfWeek()->format('Y-m-d');
+                break;
+            
+            case 'bulan_ini':
+                $tanggalMulai = Carbon::now()->startOfMonth()->format('Y-m-d');
+                $tanggalAkhir = Carbon::now()->endOfMonth()->format('Y-m-d');
+                break;
+            
+            case 'custom':
+                $tanggalMulai = $request->input('tanggal_mulai', Carbon::now()->startOfMonth()->format('Y-m-d'));
+                $tanggalAkhir = $request->input('tanggal_akhir', Carbon::now()->format('Y-m-d'));
+                break;
+            
+            default:
+                $tanggalMulai = Carbon::now()->startOfMonth()->format('Y-m-d');
+                $tanggalAkhir = Carbon::now()->format('Y-m-d');
+        }
 
         // Ambil semua barang
         $barang = Barang::all();
@@ -49,13 +74,14 @@ class LaporanController extends Controller
                 'total_keluar' => $totalKeluar,
                 'stok' => $item->stok,
                 'satuan' => $item->satuan,
+                'min_stok' => $item->min_stok,
             ];
         }
 
         // Convert ke collection
         $laporan = collect($laporan);
 
-        return view('laporan.index', compact('laporan', 'tanggalMulai', 'tanggalAkhir'));
+        return view('laporan.index', compact('laporan', 'tanggalMulai', 'tanggalAkhir', 'periode'));
     }
 
     /**
@@ -63,8 +89,39 @@ class LaporanController extends Controller
      */
     public function exportPDF(Request $request)
     {
-        $tanggalMulai = $request->input('tanggal_mulai', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $tanggalAkhir = $request->input('tanggal_akhir', Carbon::now()->format('Y-m-d'));
+        $periode = $request->input('periode', 'bulan_ini');
+        
+        // Set tanggal berdasarkan periode
+        switch ($periode) {
+            case 'hari_ini':
+                $tanggalMulai = Carbon::today()->format('Y-m-d');
+                $tanggalAkhir = Carbon::today()->format('Y-m-d');
+                $periodeName = 'Hari Ini';
+                break;
+            
+            case 'minggu_ini':
+                $tanggalMulai = Carbon::now()->startOfWeek()->format('Y-m-d');
+                $tanggalAkhir = Carbon::now()->endOfWeek()->format('Y-m-d');
+                $periodeName = 'Minggu Ini';
+                break;
+            
+            case 'bulan_ini':
+                $tanggalMulai = Carbon::now()->startOfMonth()->format('Y-m-d');
+                $tanggalAkhir = Carbon::now()->endOfMonth()->format('Y-m-d');
+                $periodeName = 'Bulan Ini';
+                break;
+            
+            case 'custom':
+                $tanggalMulai = $request->input('tanggal_mulai', Carbon::now()->startOfMonth()->format('Y-m-d'));
+                $tanggalAkhir = $request->input('tanggal_akhir', Carbon::now()->format('Y-m-d'));
+                $periodeName = 'Custom';
+                break;
+            
+            default:
+                $tanggalMulai = Carbon::now()->startOfMonth()->format('Y-m-d');
+                $tanggalAkhir = Carbon::now()->format('Y-m-d');
+                $periodeName = 'Bulan Ini';
+        }
 
         // Ambil semua barang
         $barang = Barang::all();
@@ -85,6 +142,7 @@ class LaporanController extends Controller
             $laporan[] = [
                 'kode' => $item->kode,
                 'nama' => $item->nama,
+                'kategori' => $item->kategori,
                 'stok_awal' => $stokAwal,
                 'total_masuk' => $totalMasuk,
                 'total_keluar' => $totalKeluar,
@@ -96,13 +154,9 @@ class LaporanController extends Controller
         $laporan = collect($laporan);
 
         // Generate PDF dengan DOMPDF
-        // Install dulu: composer require barryvdh/laravel-dompdf
-        // Tambahkan di config/app.php providers: Barryvdh\DomPDF\ServiceProvider::class
-        // Tambahkan di config/app.php aliases: 'PDF' => Barryvdh\DomPDF\Facade\Pdf::class
+        $pdf = PDF::loadView('laporan.pdf', compact('laporan', 'tanggalMulai', 'tanggalAkhir', 'periodeName'));
         
-        $pdf = PDF::loadView('laporan.pdf', compact('laporan', 'tanggalMulai', 'tanggalAkhir'));
-        
-        $filename = 'Laporan_Inventory_' . date('Y-m-d_His') . '.pdf';
+        $filename = 'Laporan_Inventory_' . $periodeName . '_' . date('Y-m-d_His') . '.pdf';
         
         return $pdf->download($filename);
     }
