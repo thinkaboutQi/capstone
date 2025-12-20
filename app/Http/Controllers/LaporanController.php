@@ -140,15 +140,17 @@ class LaporanController extends Controller
             $stokAwal = $item->stok - $totalMasuk + $totalKeluar;
 
             $laporan[] = [
-                'kode' => $item->kode,
-                'nama' => $item->nama,
-                'kategori' => $item->kategori,
-                'stok_awal' => $stokAwal,
-                'total_masuk' => $totalMasuk,
-                'total_keluar' => $totalKeluar,
-                'stok' => $item->stok,
-                'satuan' => $item->satuan,
-            ];
+    'kode' => $item->kode,
+    'nama' => $item->nama,
+    'kategori' => $item->kategori,
+    'stok_awal' => $stokAwal,
+    'total_masuk' => $totalMasuk,
+    'total_keluar' => $totalKeluar,
+    'stok' => $item->stok,
+    'satuan' => $item->satuan,
+    'min_stok' => $item->min_stok ?? 0, // tambahkan ini
+];
+
         }
 
         $laporan = collect($laporan);

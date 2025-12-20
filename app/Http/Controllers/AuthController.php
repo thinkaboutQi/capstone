@@ -83,8 +83,6 @@ class AuthController extends Controller
             'role' => $validated['role'],
         ]);
 
-        // Auto login setelah register
-        Auth::login($user);
 
         return redirect()->route('dashboard')->with('success', 'Registrasi berhasil! Selamat datang ' . $user->name);
     }

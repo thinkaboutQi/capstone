@@ -127,9 +127,15 @@
         .register-link a:hover {
             text-decoration: underline;
         }
+        .alert-success {
+    background: #d1fae5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
     </style>
 </head>
 <body>
+    
     <div class="login-box">
         <div class="logo">
             <img src="https://uploads.onecompiler.io/432w6j563/444sfg9pv/Picture1.jpg" alt="BLUEST Coffee Logo">
@@ -137,6 +143,11 @@
             <p>Sistem Manajemen Inventory</p>
         </div>
 
+        @if (session('success'))
+        <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+    @endif
         @if($errors->any())
             <div class="alert alert-danger">
                 {{ $errors->first() }}
