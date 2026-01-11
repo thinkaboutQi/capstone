@@ -29,7 +29,7 @@ class DashboardController extends Controller
             ->count();
         
         // Barang dengan stok minimal atau di bawahnya
-        $stokMinimal = Barang::whereRaw('stok <= min_stok')->count();
+        $stokMinimal = Barang::whereRaw('stok < min_stok')->count();
         
         // Ambil semua barang untuk tabel
         $barang = Barang::orderBy('nama', 'asc')->get();

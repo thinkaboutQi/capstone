@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Barang;
 use App\Models\StokMasuk;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StokMasukController extends Controller
 {
@@ -17,7 +18,6 @@ class StokMasukController extends Controller
         $stokMasuk = StokMasuk::with('barang')
             ->orderBy('tanggal', 'desc')
             ->get();
-            
         return view('stok-masuk.index', compact('stokMasuk'));
     }
 
@@ -35,37 +35,37 @@ class StokMasukController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input
+        // Validasi input - disesuaikan dengan nama field di view
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'barang_id' => 'required|exists:barang,id',
             'jumlah' => 'required|numeric|min:0.01',
-            'pemasok' => 'required|string|max:255',
+            'satuan' => 'nullable|string|max:50',
+            'pemasok' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
         ]);
 
-        // Gunakan database transaction untuk memastikan konsistensi data
-        DB::transaction(function () use ($validated) {
-            // Simpan data stok masuk
-            StokMasuk::create($validated);
+        try {
+            DB::transaction(function () use ($validated) {
+                // Simpan data stok masuk
+                StokMasuk::create($validated);
 
-            // Update stok barang
-            $barang = Barang::findOrFail($validated['barang_id']);
-            $barang->stok += $validated['jumlah'];
-            $barang->save();
-        });
+                // Update stok barang
+                $barang = Barang::findOrFail($validated['barang_id']);
+                $barang->stok += $validated['jumlah'];
+                $barang->save();
+            });
 
-        return redirect()->route('stok-masuk.index')
-            ->with('success', 'Stok masuk berhasil dicatat!');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $stokMasuk = StokMasuk::with('barang')->findOrFail($id);
-        return view('stok-masuk.show', compact('stokMasuk'));
+            return redirect()->route('stok-masuk.index')
+                ->with('success', 'Stok masuk berhasil dicatat!');
+                
+        } catch (\Exception $e) {
+            Log::error('Error store stok masuk: ' . $e->getMessage());
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -83,35 +83,48 @@ class StokMasukController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // Validasi input
+        // Validasi input - disesuaikan dengan nama field di view
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'barang_id' => 'required|exists:barang,id',
             'jumlah' => 'required|numeric|min:0.01',
-            'pemasok' => 'required|string|max:255',
+            'satuan' => 'nullable|string|max:50',
+            'pemasok' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
         ]);
 
-        $stokMasuk = StokMasuk::findOrFail($id);
+        try {
+            $stokMasuk = StokMasuk::findOrFail($id);
 
-        // Gunakan database transaction
-        DB::transaction(function () use ($stokMasuk, $validated) {
-            // Kembalikan stok lama
-            $barang = Barang::findOrFail($stokMasuk->barang_id);
-            $barang->stok -= $stokMasuk->jumlah;
-            $barang->save();
+            DB::transaction(function () use ($stokMasuk, $validated) {
+                // Simpan data lama
+                $barangIdLama = $stokMasuk->barang_id;
+                $jumlahLama = $stokMasuk->jumlah;
 
-            // Update stok masuk
-            $stokMasuk->update($validated);
+                // Kembalikan stok lama
+                $barangLama = Barang::findOrFail($barangIdLama);
+                $barangLama->stok -= $jumlahLama;
+                $barangLama->save();
 
-            // Tambah stok baru
-            $barangBaru = Barang::findOrFail($validated['barang_id']);
-            $barangBaru->stok += $validated['jumlah'];
-            $barangBaru->save();
-        });
+                // Update stok masuk
+                $stokMasuk->update($validated);
 
-        return redirect()->route('stok-masuk.index')
-            ->with('success', 'Stok masuk berhasil diupdate!');
+                // Tambah stok baru
+                $barangBaru = Barang::findOrFail($validated['barang_id']);
+                $barangBaru->stok += $validated['jumlah'];
+                $barangBaru->save();
+            });
+
+            return redirect()->route('stok-masuk.index')
+                ->with('success', 'Stok masuk berhasil diupdate!');
+                
+        } catch (\Exception $e) {
+            Log::error('Error update stok masuk: ' . $e->getMessage());
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal mengupdate data: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -119,20 +132,27 @@ class StokMasukController extends Controller
      */
     public function destroy(string $id)
     {
-        $stokMasuk = StokMasuk::findOrFail($id);
+        try {
+            $stokMasuk = StokMasuk::findOrFail($id);
 
-        // Gunakan database transaction
-        DB::transaction(function () use ($stokMasuk) {
-            // Kurangi stok barang
-            $barang = Barang::findOrFail($stokMasuk->barang_id);
-            $barang->stok -= $stokMasuk->jumlah;
-            $barang->save();
+            DB::transaction(function () use ($stokMasuk) {
+                // Kurangi stok barang
+                $barang = Barang::findOrFail($stokMasuk->barang_id);
+                $barang->stok -= $stokMasuk->jumlah;
+                $barang->save();
 
-            // Hapus record stok masuk
-            $stokMasuk->delete();
-        });
+                // Hapus record stok masuk
+                $stokMasuk->delete();
+            });
 
-        return redirect()->route('stok-masuk.index')
-            ->with('success', 'Stok masuk berhasil dihapus!');
+            return redirect()->route('stok-masuk.index')
+                ->with('success', 'Stok masuk berhasil dihapus!');
+                
+        } catch (\Exception $e) {
+            Log::error('Error delete stok masuk: ' . $e->getMessage());
+            
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
     }
 }

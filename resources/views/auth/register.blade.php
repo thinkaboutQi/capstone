@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - BLUEST Coffee</title>
+    <title>Register - BLUEAST Coffee</title>
     <style>
         * {
             margin: 0;
@@ -147,7 +147,7 @@
     <div class="register-box">
         <div class="logo">
             <img src="https://uploads.onecompiler.io/432w6j563/444sfg9pv/Picture1.jpg" alt="BLUEST Coffee Logo">
-            <h1>BLUEST Coffee</h1>
+            <h1>BLUEAST Coffee</h1>
             <p>Daftar Akun Baru</p>
         </div>
 

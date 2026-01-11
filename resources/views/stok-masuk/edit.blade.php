@@ -55,9 +55,9 @@
         </div>
 
         <div class="form-group">
-            <label>Supplier</label>
-            <input type="text" name="supplier" value="{{ old('supplier', $stokMasuk->supplier ?? '') }}" placeholder="Nama supplier">
-            @error('supplier')
+            <label>Pemasok</label>
+            <input type="text" name="pemasok" value="{{ old('pemasok', $stokMasuk->pemasok ?? '') }}" placeholder="Nama pemasok">
+            @error('pemasok')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>

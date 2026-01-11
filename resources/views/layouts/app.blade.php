@@ -468,14 +468,14 @@
     <nav class="navbar">
         <a href="{{ route('dashboard') }}" class="navbar-brand">
             <img src="https://uploads.onecompiler.io/432w6j563/444sfg9pv/Picture1.jpg" alt="BLUEST Coffee Logo">
-            <span>BLUEST Coffee</span>
+            <span>BLUEAST COFFEE</span>
         </a>
         <div class="navbar-user">
             <!-- Notification Bell -->
             <div class="notification-bell" onclick="toggleNotification()">
                 <span class="bell-icon">🔔</span>
                 @php
-                    $stokMinimal = \App\Models\Barang::whereRaw('stok <= min_stok')->count();
+                    $stokMinimal = \App\Models\Barang::whereRaw('stok < min_stok')->count();
                 @endphp
                 @if($stokMinimal > 0)
                     <span class="notification-badge">{{ $stokMinimal }}</span>
@@ -500,7 +500,7 @@
 
             <div class="notification-list">
                 @php
-                    $barangMinimal = \App\Models\Barang::whereRaw('stok <= min_stok')
+                    $barangMinimal = \App\Models\Barang::whereRaw('stok < min_stok')
                         ->orderBy('stok', 'asc')
                         ->get();
                 @endphp

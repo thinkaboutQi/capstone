@@ -26,6 +26,7 @@ class StokMasuk extends Model
         'tanggal',
         'barang_id',
         'jumlah',
+        'satuan',
         'pemasok',
         'keterangan',
     ];

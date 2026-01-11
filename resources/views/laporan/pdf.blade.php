@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Laporan Inventory - BLUEST Coffee</title>
+    <title>Laporan Inventory - BLUEAST Coffee</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -127,7 +127,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>☕ BLUEST COFFEE</h1>
+        <h1>BLUEST COFFEE</h1>
         <p>Ruko Sorrento Place, Jl. Ir. Sukarno No.17, Curug Sangereng</p>
         <p>Kelapa Dua, Kabupaten Tangerang, Banten 15810</p>
         <h2>LAPORAN INVENTORY</h2>

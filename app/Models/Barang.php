@@ -61,7 +61,7 @@ class Barang extends Model
      */
     public function isStokMinimal()
     {
-        return $this->stok <= $this->min_stok;
+        return $this->stok < $this->min_stok;  // UBAH dari <= menjadi <
     }
 
     /**
@@ -71,7 +71,7 @@ class Barang extends Model
     {
         if ($this->stok <= 0) {
             return 'Habis';
-        } elseif ($this->stok <= $this->min_stok) {
+        } elseif ($this->stok < $this->min_stok) {  // UBAH dari <= menjadi <
             return 'Menipis';
         } else {
             return 'Aman';
@@ -83,7 +83,7 @@ class Barang extends Model
      */
     public function scopeStokMinimal($query)
     {
-        return $query->whereRaw('stok <= min_stok');
+        return $query->whereRaw('stok < min_stok');  // UBAH dari <= menjadi <
     }
 
     /**
@@ -91,6 +91,6 @@ class Barang extends Model
      */
     public function scopeStokAman($query)
     {
-        return $query->whereRaw('stok > min_stok');
+        return $query->whereRaw('stok >= min_stok');  // UBAH dari > menjadi >=
     }
 }

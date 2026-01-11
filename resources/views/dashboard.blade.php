@@ -5,7 +5,7 @@
 @section('content')
 <div class="page-header">
     <h2>Dashboard</h2>
-    <p>Selamat datang di sistem manajemen inventory BLUEST Coffee</p>
+    <p>Selamat datang di sistem manajemen inventory BLUEAST Coffee</p>
 </div>
 
 <style>

@@ -3,6 +3,7 @@
 @section('title', 'Data Barang')
 
 @section('content')
+
 <div class="page-header">
     <h2>Data Barang</h2>
     <p>Kelola data bahan baku dan produk</p>
@@ -46,10 +47,12 @@
                     </div>
                 </td>
                 <td>
-                    @if($item->stok > $item->min_stok)
-                        <span class="badge badge-success">Aman</span>
+                    @if($item->stok <= 0)
+                        <span class="badge badge-danger">Habis</span>
+                    @elseif($item->stok < $item->min_stok)
+                        <span class="badge badge-warning">Menipis</span>
                     @else
-                        <span class="badge badge-danger">Menipis</span>
+                        <span class="badge badge-success">Aman</span>
                     @endif
                 </td>
                 <td>
@@ -81,37 +84,30 @@
         cursor: pointer;
         transition: transform 0.2s;
     }
-
     .time-badge:hover {
         transform: scale(1.05);
     }
-
     .time-icon {
         font-size: 14px;
         animation: rotate 2s linear infinite;
     }
-
     @keyframes rotate {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
     }
-
     .time-text {
         text-transform: capitalize;
     }
-
     .time-detail {
         font-size: 11px;
         color: #999;
         margin-top: 4px;
     }
-
     .btn-sm {
         padding: 5px 10px;
         font-size: 12px;
         margin-right: 5px;
     }
-
     /* Live Update Indicator */
     .live-indicator {
         display: inline-flex;
@@ -125,12 +121,10 @@
         margin-left: 10px;
         animation: pulse-live 2s infinite;
     }
-
     @keyframes pulse-live {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.6; }
     }
-
     .live-dot {
         width: 8px;
         height: 8px;
@@ -138,7 +132,6 @@
         border-radius: 50%;
         animation: blink 1s infinite;
     }
-
     @keyframes blink {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.3; }
@@ -151,12 +144,10 @@
     // Update waktu secara realtime setiap 1 menit
     function updateRelativeTime() {
         const timeBadges = document.querySelectorAll('.time-badge');
-        
         timeBadges.forEach(badge => {
             const timestamp = parseInt(badge.dataset.timestamp);
             const now = Math.floor(Date.now() / 1000);
             const diff = now - timestamp;
-            
             const timeText = badge.querySelector('.time-text');
             timeText.textContent = formatRelativeTime(diff);
         });
@@ -181,7 +172,6 @@
 
     // Update setiap 1 menit
     setInterval(updateRelativeTime, 60000);
-
     // Update pertama kali saat load
     updateRelativeTime();
 
@@ -197,4 +187,5 @@
     });
 </script>
 @endpush
+
 @endsection
